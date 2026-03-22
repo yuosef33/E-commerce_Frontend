@@ -7,14 +7,15 @@ import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard';
 import toast from 'react-hot-toast';
 import { FiSearch } from 'react-icons/fi';
+import { sanitizeSearchParam } from '../utils/security';
 
 export default function ProductsPage({ refreshCart }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  const [search, setSearch] = useState(sanitizeSearchParam(searchParams.get('search') || ''));
+  const [selectedCategory, setSelectedCategory] = useState(sanitizeSearchParam(searchParams.get('category') || ''));
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const { isAuthenticated } = useAuth();
@@ -41,7 +42,7 @@ export default function ProductsPage({ refreshCart }) {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(0);
-    const val = e.target.elements.search.value;
+    const val = sanitizeSearchParam(e.target.elements.search.value);
     setSearch(val);
     const sp = new URLSearchParams(searchParams);
     if (val) sp.set('search', val); else sp.delete('search');

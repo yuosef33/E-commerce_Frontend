@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { FiMail, FiLock, FiLogIn } from 'react-icons/fi';
+import { stripHtml, isValidEmail } from '../utils/security';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -13,13 +14,19 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) {
+    const cleanEmail = stripHtml(email).toLowerCase();
+    const cleanPassword = password; // don't strip password — may contain special chars
+    if (!cleanEmail || !cleanPassword) {
       toast.error('Please fill in all fields');
+      return;
+    }
+    if (!isValidEmail(cleanEmail)) {
+      toast.error('Please enter a valid email address');
       return;
     }
     setLoading(true);
     try {
-      await login(email, password);
+      await login(cleanEmail, cleanPassword);
       navigate('/');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed. Check your credentials.');

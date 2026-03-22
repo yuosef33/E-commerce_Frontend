@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import { FiShoppingCart, FiMenu, FiX, FiUser, FiLogOut, FiPackage } from 'react-icons/fi';
+import { FiShoppingCart, FiMenu, FiX, FiUser, FiLogOut, FiPackage, FiGrid, FiPlusSquare } from 'react-icons/fi';
 
 export default function Navbar({ cartCount = 0 }) {
   const { isAuthenticated, user, logout } = useAuth();
@@ -43,12 +43,21 @@ export default function Navbar({ cartCount = 0 }) {
               <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)} id="profile-button">
                 <FiUser size={18} />
                 <span>{user?.name || 'User'}</span>
+                {user?.isAdmin && <span className="admin-badge">Admin</span>}
               </button>
               {profileOpen && (
                 <div className="dropdown-menu">
                   <Link to="/orders" onClick={() => setProfileOpen(false)} id="orders-link">
                     <FiPackage size={16} /> My Orders
                   </Link>
+                  <Link to="/products/new" onClick={() => setProfileOpen(false)} id="create-product-link">
+                    <FiPlusSquare size={16} /> Sell Product
+                  </Link>
+                  {user?.isAdmin && (
+                    <Link to="/admin/categories" onClick={() => setProfileOpen(false)} id="admin-categories-link">
+                      <FiGrid size={16} /> Manage Categories
+                    </Link>
+                  )}
                   <button onClick={handleLogout} id="logout-button">
                     <FiLogOut size={16} /> Logout
                   </button>

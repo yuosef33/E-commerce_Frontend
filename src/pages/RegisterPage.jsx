@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { verifyOtp } from '../api/authApi';
 import toast from 'react-hot-toast';
 import { FiUser, FiMail, FiLock, FiPhone, FiUserPlus, FiKey } from 'react-icons/fi';
+import { stripHtml, isValidEmail, isValidName, isValidPhone, isValidPassword } from '../utils/security';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -18,17 +19,32 @@ export default function RegisterPage() {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password || !phoneNumber) {
+    const cleanName = stripHtml(name);
+    const cleanEmail = stripHtml(email).toLowerCase();
+    const cleanPhone = stripHtml(phoneNumber);
+    if (!cleanName || !cleanEmail || !password || !cleanPhone) {
       toast.error('Please fill in all fields');
       return;
     }
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters');
+    if (!isValidName(cleanName)) {
+      toast.error('Name must be 2-50 characters, letters only');
+      return;
+    }
+    if (!isValidEmail(cleanEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    if (!isValidPassword(password)) {
+      toast.error('Password must be 8-128 characters');
+      return;
+    }
+    if (!isValidPhone(cleanPhone)) {
+      toast.error('Please enter a valid phone number (10-15 digits)');
       return;
     }
     setLoading(true);
     try {
-      await register(name, email, password, phoneNumber);
+      await register(cleanName, cleanEmail, password, cleanPhone);
       setStep(2);
       toast.success('OTP sent to your email!');
     } catch (err) {
@@ -40,13 +56,14 @@ export default function RegisterPage() {
 
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
-    if (!otp) {
+    const cleanOtp = stripHtml(otp).replace(/[^0-9a-zA-Z]/g, '');
+    if (!cleanOtp) {
       toast.error('Please enter the OTP');
       return;
     }
     setLoading(true);
     try {
-      await verifyOtp(email, otp);
+      await verifyOtp(stripHtml(email).toLowerCase(), cleanOtp);
       toast.success('Account created! Please login.');
       navigate('/login');
     } catch (err) {

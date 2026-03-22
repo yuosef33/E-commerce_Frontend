@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -15,6 +16,8 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
 import ContactPage from './pages/ContactPage';
 import AboutPage from './pages/AboutPage';
+import CreateProductPage from './pages/CreateProductPage';
+import AdminCategoriesPage from './pages/AdminCategoriesPage';
 import { getCart } from './api/cartApi';
 import './App.css';
 
@@ -44,10 +47,12 @@ function AppContent() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/products" element={<ProductsPage refreshCart={refreshCart} />} />
+          <Route path="/products/new" element={<ProtectedRoute><CreateProductPage /></ProtectedRoute>} />
           <Route path="/products/:id" element={<ProductDetailPage refreshCart={refreshCart} />} />
           <Route path="/cart" element={<ProtectedRoute><CartPage refreshCart={refreshCart} /></ProtectedRoute>} />
           <Route path="/checkout" element={<ProtectedRoute><CheckoutPage refreshCart={refreshCart} /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+          <Route path="/admin/categories" element={<AdminRoute><AdminCategoriesPage /></AdminRoute>} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>

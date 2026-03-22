@@ -4,6 +4,38 @@ import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
 
+// Safely decode JWT payload
+function decodeToken(token) {
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(base64));
+  } catch {
+    return null;
+  }
+}
+
+// Extract roles from JWT payload (Spring Security format)
+function extractRoles(payload) {
+  if (!payload) return [];
+  // Try common claim names for authorities/roles
+  const raw = payload.authorities || payload.roles || payload.role || payload.scope || [];
+  if (typeof raw === 'string') return [raw];
+  if (Array.isArray(raw)) {
+    return raw.map((r) => (typeof r === 'string' ? r : r.authority || r.userRole || ''));
+  }
+  return [];
+}
+
+function buildUserData(payload, email) {
+  const roles = extractRoles(payload);
+  return {
+    email: payload?.sub || email,
+    name: payload?.name || email.split('@')[0],
+    roles,
+    isAdmin: roles.some((r) => r.toUpperCase().includes('ADMIN')),
+  };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,9 +61,8 @@ export function AuthProvider({ children }) {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
 
-    // Decode the JWT payload to get user info
-    const payload = JSON.parse(atob(accessToken.split('.')[1]));
-    const userData = { email: payload.sub || email, name: payload.name || email.split('@')[0] };
+    const payload = decodeToken(accessToken);
+    const userData = buildUserData(payload, email);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { checkout } from '../api/orderApi';
 import toast from 'react-hot-toast';
 import { FiMapPin, FiHome, FiGlobe, FiCheck } from 'react-icons/fi';
+import { stripHtml } from '../utils/security';
 
 export default function CheckoutPage({ refreshCart }) {
   const [shippingAddress, setShippingAddress] = useState('');
@@ -13,13 +14,20 @@ export default function CheckoutPage({ refreshCart }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!shippingAddress || !city || !country) {
+    const cleanAddress = stripHtml(shippingAddress);
+    const cleanCity = stripHtml(city);
+    const cleanCountry = stripHtml(country);
+    if (!cleanAddress || !cleanCity || !cleanCountry) {
       toast.error('Please fill in all fields');
+      return;
+    }
+    if (cleanAddress.length > 200 || cleanCity.length > 100 || cleanCountry.length > 100) {
+      toast.error('Input too long');
       return;
     }
     setLoading(true);
     try {
-      await checkout(shippingAddress, city, country);
+      await checkout(cleanAddress, cleanCity, cleanCountry);
       toast.success('Order placed successfully!');
       if (refreshCart) refreshCart();
       navigate('/orders');
